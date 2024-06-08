@@ -70,7 +70,7 @@ def get_linked_role(client: discord.client.Client = None, group: dict = None):
 async def on_ready():
     print(f'We have logged in as {discord.user}')
 
-    groups = get_linked_groups(KeycloakClient)
+    groups = get_linked_groups(client=KeycloakClient)
 
     for group in groups:
         print(group)
