@@ -23,21 +23,33 @@ intents.message_content = True
 discord = discord.Client(intents=intents)
 
 
-@discord.event
-async def on_ready():
-    print(f'We have logged in as {discord.user}')
+def get_linked_groups(client: KeycloakAdmin = None):
+    """
+    Get all Keycloak groups that have the required attributes for linking to a Discord role
+    :param client: A KeycloakAdmin instance configured for your realm
+    :return: A list of groups with the required attributes
+    """
 
-    synced_groups = []
+    groups = []
 
     for group in keycloak.get_groups(query={"briefRepresentation": "false"}):
         try:
             if group["attributes"]["discord-guild"] and group["attributes"]["discord-role"]:
-                synced_groups.append(group)
+                groups.append(group)
         except KeyError:
             # TODO: add comment
             pass
 
-    for group in synced_groups:
+    return groups
+
+
+@discord.event
+async def on_ready():
+    print(f'We have logged in as {discord.user}')
+
+    groups = get_linked_groups(keycloak)
+
+    for group in groups:
         print(group)
         guild = discord.get_guild(int(group["attributes"]["discord-guild"][0]))
         if guild is None:
