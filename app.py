@@ -30,17 +30,18 @@ def get_linked_groups(client: KeycloakAdmin = None):
     :return: A list of groups with the required attributes
     """
 
-    groups = []
+    all_groups = client.get_groups(query={"briefRepresentation": "false"})
+    valid_groups = []
 
-    for group in KeycloakClient.get_groups(query={"briefRepresentation": "false"}):
+    for group in all_groups:
         try:
             if group["attributes"]["discord-guild"] and group["attributes"]["discord-role"]:
-                groups.append(group)
+                valid_groups.append(group)
         except KeyError:
             # TODO: add comment
             pass
 
-    return groups
+    return valid_groups
 
 
 def get_linked_role(client: discord.client.Client = None):
