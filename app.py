@@ -82,6 +82,9 @@ async def on_message(message):
 
 @discord.event
 async def on_member_update(old, new):
+    if old.id == discord.user.id:
+        return
+
     old_roles = set(old.roles)
     new_roles = set(new.roles)
 
