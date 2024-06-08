@@ -8,7 +8,7 @@ from keycloak import KeycloakAdmin
 
 load_dotenv()
 
-keycloak = KeycloakAdmin(
+KeycloakClient = KeycloakAdmin(
             server_url=os.environ["KEYCLOAK_URL"],
             username=os.environ["KEYCLOAK_USERNAME"],
             password=os.environ["KEYCLOAK_PASSWORD"],
@@ -20,7 +20,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-discord = discord.Client(intents=intents)
+DiscordClient = discord.Client(intents=intents)
 
 
 def get_linked_groups(client: KeycloakAdmin = None):
@@ -32,7 +32,7 @@ def get_linked_groups(client: KeycloakAdmin = None):
 
     groups = []
 
-    for group in keycloak.get_groups(query={"briefRepresentation": "false"}):
+    for group in KeycloakClient.get_groups(query={"briefRepresentation": "false"}):
         try:
             if group["attributes"]["discord-guild"] and group["attributes"]["discord-role"]:
                 groups.append(group)
@@ -43,15 +43,18 @@ def get_linked_groups(client: KeycloakAdmin = None):
     return groups
 
 
-@discord.event
+def get_linked_role(client: discord.client.Client = None):
+
+
+@DiscordClient.event
 async def on_ready():
     print(f'We have logged in as {discord.user}')
 
-    groups = get_linked_groups(keycloak)
+    groups = get_linked_groups(KeycloakClient)
 
     for group in groups:
         print(group)
-        guild = discord.get_guild(int(group["attributes"]["discord-guild"][0]))
+        guild = DiscordClient.get_guild(int(group["attributes"]["discord-guild"][0]))
         if guild is None:
             continue
 
@@ -60,7 +63,7 @@ async def on_ready():
             continue
 
         for member in role.members:
-            keycloak_user = keycloak.get_users(
+            keycloak_user = KeycloakClient.get_users(
                 query={"idpUserId": member.id, "idpAlias": "discord"})
 
             if len(keycloak_user) == 0:
@@ -71,18 +74,18 @@ async def on_ready():
                     keycloak_user[0]["username"], member.global_name, group["name"]))
 
 
-@discord.event
+@DiscordClient.event
 async def on_message(message):
-    if message.author == discord.user:
+    if message.author == DiscordClient.user:
         return
 
     if message.content.startswith('$hello'):
         await message.channel.send('Hello!')
 
 
-@discord.event
+@DiscordClient.event
 async def on_member_update(old, new):
-    if old.id == discord.user.id:
+    if old.id == DiscordClient.user.id:
         return
 
     old_roles = set(old.roles)
@@ -94,7 +97,7 @@ async def on_member_update(old, new):
     if new_roles == old_roles:
         return
 
-    keycloak_user = keycloak.get_users(
+    keycloak_user = KeycloakClient.get_users(
         query={"idpUserId": old.id, "idpAlias": "discord"})
 
     if len(keycloak_user) == 0:
@@ -102,17 +105,17 @@ async def on_member_update(old, new):
 
     if len(added_roles) > 0:
         for role in added_roles:
-            keycloak_group = keycloak.get_groups(
+            keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
             await old.guild.text_channels[0].send(
                 'hell yea %s get keycloak role %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
 
     if len(removed_roles) > 0:
         for role in removed_roles:
-            keycloak_group = keycloak.get_groups(
+            keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
             await old.guild.text_channels[0].send(
                 'haha %s get demoted from %s idiot' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
 
 
-discord.run(os.environ["DISCORD_BOT_TOKEN"])
+DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
