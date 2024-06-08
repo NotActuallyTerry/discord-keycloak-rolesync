@@ -44,7 +44,26 @@ def get_linked_groups(client: KeycloakAdmin = None):
     return valid_groups
 
 
-def get_linked_role(client: discord.client.Client = None):
+def get_linked_role(client: discord.client.Client = None, group: dict = None):
+    """
+    Get the Discord role that is linked to a Keycloak group
+    :param client: A Discord Client instance
+    :param group: A dict containing a Keycloak group with attributes `discord-guild` and `discord-role`
+    :return: The Discord role linked to the provided Keycloak group
+    """
+
+    guild_id = int(group["attributes"]["discord-guild"][0])
+    role_id = int(group["attributes"]["discord-role"][0])
+
+    guild = client.get_guild(guild_id)
+    if guild is None:
+        return None
+
+    role = guild.get_role(role_id)
+    if role is None:
+        return None
+
+    return role
 
 
 @DiscordClient.event
@@ -55,13 +74,8 @@ async def on_ready():
 
     for group in groups:
         print(group)
-        guild = DiscordClient.get_guild(int(group["attributes"]["discord-guild"][0]))
-        if guild is None:
-            continue
 
-        role = guild.get_role(int(group["attributes"]["discord-role"][0]))
-        if role is None:
-            continue
+        role = get_linked_role(client=DiscordClient, group=group)
 
         for member in role.members:
             keycloak_user = KeycloakClient.get_users(
@@ -70,7 +84,7 @@ async def on_ready():
             if len(keycloak_user) == 0:
                 continue
 
-            await guild.text_channels[0].send(
+            await role.guild.text_channels[0].send(
                 "%s (%s) should be in keycloak group %s" % (
                     keycloak_user[0]["username"], member.global_name, group["name"]))
 
