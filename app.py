@@ -66,6 +66,37 @@ def get_linked_role(client: discord.client.Client = None, group: dict = None) ->
     return role
 
 
+def get_group_members(client: KeycloakAdmin = None, group_id: str = None) -> list:
+    """
+    Get the users that are in the Keycloak group
+    :param client: A :class:`KeycloakAdmin` client
+    :param group_id: A :class:`str` with the group's UUID in Keycloak
+    :return: A :class:`list` containing all users in the group
+    """
+    # Keycloak paginates the response when grabbing the list of members
+    # The response doesn't contain any info on the next page either
+    # Therefore, we'll need to iterate over the pages until the returned
+    # list is smaller than the provided page size
+    page_start = 0
+    page_size = 100
+    members = []
+    group_members = client.get_group_members(
+        group_id=group_id,
+        query={"first": page_start, "max": page_size}
+    )
+    members += group_members
+    while len(group_members) == page_size:
+        page_start += page_size
+        group_members = client.get_group_members(
+            group_id=group_id,
+            query={"first": page_start, "max": page_size}
+        )
+        members += group_members
+
+    return members
+
+
+
 @DiscordClient.event
 async def on_ready():
     print(f'We have logged in as {discord.user}')
