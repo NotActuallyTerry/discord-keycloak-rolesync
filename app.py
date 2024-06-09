@@ -96,6 +96,24 @@ def get_group_members(client: KeycloakAdmin = None, group_id: str = None) -> lis
     return members
 
 
+def get_discord_id(client: KeycloakAdmin = None, user_id: str = None) -> int:
+    """
+    Gets the Discord ID from the user's Keycloak profile
+    This only works if the Keycloak realm has Discord set up
+    as an Identity provider.
+    :param client: A KeycloakAdmin client
+    :param user_id: The user's UUID in Keycloak
+    :return: The user's Discord ID
+    """
+    profile = client.get_user(user_id=user_id)
+    discord_id = None
+    for provider in profile["federatedIdentities"]:
+        if provider["identityProvider"] == "discord":
+            discord_id = provider["userId"]
+    if not discord_id:
+        raise Exception("Cannot find Github username")
+    return int(discord_id)
+
 
 @DiscordClient.event
 async def on_ready():
