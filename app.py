@@ -127,6 +127,7 @@ async def on_ready():
         role = get_linked_role(client=DiscordClient, group=group)
         if not role:
             continue
+        group_members = get_group_members(client=KeycloakClient, group_id=group["id"])
 
         # Add users to the Keycloak group if they're a part of the Discord role
         for discord_user in role.members:
@@ -141,8 +142,18 @@ async def on_ready():
 
             await role.guild.text_channels[0].send(
                 "%s (%s) should be in keycloak group %s" % (
-                    keycloak_user[0]["username"], member.global_name, group["name"]))
                     keycloak_user[0]["username"], discord_user.global_name, group["name"]))
+
+        # Remove users from the Keycloak group if they're not a part of the Discord role
+        for keycloak_user in group_members:
+            discord_id = get_discord_id(client=KeycloakClient, user_id=keycloak_user["id"])
+            discord_user = DiscordClient.get_guild(role.guild.id).get_member(discord_id)
+
+            if discord_user.id not in [user.id for user in role.members]:
+                # KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
+                await role.guild.text_channels[0].send(
+                    "%s (%s) should not be in keycloak group %s" % (
+                        keycloak_user["username"], discord_user.global_name, group["name"]))
 
 
 @DiscordClient.event
