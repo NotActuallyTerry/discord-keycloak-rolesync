@@ -77,9 +77,10 @@ async def on_ready():
 
         role = get_linked_role(client=DiscordClient, group=group)
 
-        for member in role.members:
+        # Add users to the Keycloak group if they're a part of the Discord role
+        for discord_user in role.members:
             keycloak_user = KeycloakClient.get_users(
-                query={"idpUserId": member.id, "idpAlias": "discord"})
+                query={"idpUserId": discord_user.id, "idpAlias": "discord"})
 
             if len(keycloak_user) == 0:
                 continue
@@ -87,6 +88,7 @@ async def on_ready():
             await role.guild.text_channels[0].send(
                 "%s (%s) should be in keycloak group %s" % (
                     keycloak_user[0]["username"], member.global_name, group["name"]))
+                    keycloak_user[0]["username"], discord_user.global_name, group["name"]))
 
 
 @DiscordClient.event
