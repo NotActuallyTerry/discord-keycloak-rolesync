@@ -125,6 +125,8 @@ async def on_ready():
         print(group)
 
         role = get_linked_role(client=DiscordClient, group=group)
+        if not role:
+            continue
 
         # Add users to the Keycloak group if they're a part of the Discord role
         for discord_user in role.members:
@@ -132,6 +134,9 @@ async def on_ready():
                 query={"idpUserId": discord_user.id, "idpAlias": "discord"})
 
             if len(keycloak_user) == 0:
+                continue
+
+            if keycloak_user[0]["id"] in [user["id"] for user in group_members]:
                 continue
 
             await role.guild.text_channels[0].send(
