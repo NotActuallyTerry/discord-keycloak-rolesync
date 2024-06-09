@@ -23,7 +23,7 @@ intents.message_content = True
 DiscordClient = discord.Client(intents=intents)
 
 
-def get_linked_groups(client: KeycloakAdmin = None):
+def get_linked_groups(client: KeycloakAdmin = None) -> list:
     """
     Get all Keycloak groups that have the required attributes for linking to a Discord role
     :param client: A KeycloakAdmin instance configured for your realm
@@ -44,7 +44,7 @@ def get_linked_groups(client: KeycloakAdmin = None):
     return valid_groups
 
 
-def get_linked_role(client: discord.client.Client = None, group: dict = None):
+def get_linked_role(client: discord.client.Client = None, group: dict = None) -> discord.Role | None:
     """
     Get the Discord role that is linked to a Keycloak group
     :param client: A Discord Client instance
