@@ -29,8 +29,25 @@ def get_linked_groups(client: KeycloakAdmin = None) -> list:
     :param client: A KeycloakAdmin instance configured for your realm
     :return: A list of groups with the required attributes
     """
+    page_start = 0
+    page_size = 100
+    all_groups = []
 
-    all_groups = client.get_groups(query={"briefRepresentation": "false"})
+    groups = client.get_groups(
+        query={"briefRepresentation": "false",
+               "first": page_start,
+               "max": page_size}
+    )
+    all_groups += groups
+    while len(groups) == page_size:
+        page_start += page_size
+        groups = client.get_groups(
+            query={"briefRepresentation": "false",
+                   "first": page_start,
+                   "max": page_size}
+        )
+        all_groups += groups
+
     valid_groups = []
 
     for group in all_groups:
