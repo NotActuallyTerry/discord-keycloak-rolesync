@@ -134,12 +134,12 @@ def get_discord_id(client: KeycloakAdmin = None, user_id: str = None) -> int:
 
 @DiscordClient.event
 async def on_ready():
-    print(f'We have logged in as {discord.user}')
+    print(f'We have logged in as {DiscordClient.user}')
 
     groups = get_linked_groups(client=KeycloakClient)
 
     for group in groups:
-        print(group)
+        print(f'Syncing Keycloak group {group["name"]}')
 
         role = get_linked_role(client=DiscordClient, group=group)
         if not role:
@@ -157,7 +157,7 @@ async def on_ready():
             if keycloak_user[0]["id"] in [user["id"] for user in group_members]:
                 continue
 
-            await role.guild.text_channels[0].send(
+            print(
                 "%s (%s) should be in keycloak group %s" % (
                     keycloak_user[0]["username"], discord_user.global_name, group["name"]))
 
@@ -168,7 +168,7 @@ async def on_ready():
 
             if discord_user.id not in [user.id for user in role.members]:
                 # KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
-                await role.guild.text_channels[0].send(
+                print(
                     "%s (%s) should not be in keycloak group %s" % (
                         keycloak_user["username"], discord_user.global_name, group["name"]))
 
@@ -206,15 +206,15 @@ async def on_member_update(old, new):
         for role in added_roles:
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
-            await old.guild.text_channels[0].send(
-                'hell yea %s get keycloak role %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
+            print(
+                'Adding Discord user %s to Keycloak group %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
 
     if len(removed_roles) > 0:
         for role in removed_roles:
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
-            await old.guild.text_channels[0].send(
-                'haha %s get demoted from %s idiot' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
+            print(
+                'Removing Discord user %s to Keycloak group %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
 
 
 DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
