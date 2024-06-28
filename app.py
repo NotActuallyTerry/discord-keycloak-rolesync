@@ -139,11 +139,11 @@ async def on_ready():
     groups = get_linked_groups(client=KeycloakClient)
 
     for group in groups:
-        print(f'Syncing Keycloak group {group["name"]}')
-
         role = get_linked_role(client=DiscordClient, group=group)
         if not role:
             continue
+
+        print(f'Syncing Keycloak group {group["name"]} with Discord role {role.name}')
         group_members = get_group_members(client=KeycloakClient, group_id=group["id"])
 
         # Add users to the Keycloak group if they're a part of the Discord role
@@ -207,14 +207,16 @@ async def on_member_update(old, new):
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
             print(
-                'Adding Discord user %s to Keycloak group %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
+                'Adding %s (%s) to Keycloak group %s' % (
+                    keycloak_user[0]["username"], new.global_name, keycloak_group[0]["name"]))
 
     if len(removed_roles) > 0:
         for role in removed_roles:
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
             print(
-                'Removing Discord user %s to Keycloak group %s' % (keycloak_user[0]["username"], keycloak_group[0]["name"]))
+                'Removing %s (%s) from Keycloak group %s' % (
+                    keycloak_user[0]["username"], new.global_name, keycloak_group[0]["name"]))
 
 
 DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
