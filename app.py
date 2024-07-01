@@ -158,8 +158,9 @@ async def on_ready():
                 continue
 
             print(
-                "%s (%s) should be in keycloak group %s" % (
+                "Adding %s (%s) to Keycloak group %s" % (
                     keycloak_user[0]["username"], discord_user.global_name, group["name"]))
+            KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=group["id"])
 
         # Remove users from the Keycloak group if they're not a part of the Discord role
         for keycloak_user in group_members:
@@ -169,8 +170,9 @@ async def on_ready():
             if discord_user.id not in [user.id for user in role.members]:
                 # KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
                 print(
-                    "%s (%s) should not be in keycloak group %s" % (
+                    "Removing %s (%s) from Keycloak group %s" % (
                         keycloak_user["username"], discord_user.global_name, group["name"]))
+                KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
 
 
 @DiscordClient.event
@@ -209,6 +211,7 @@ async def on_member_update(old, new):
             print(
                 'Adding %s (%s) to Keycloak group %s' % (
                     keycloak_user[0]["username"], new.global_name, keycloak_group[0]["name"]))
+            KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"],group_id=keycloak_group[0]["id"])
 
     if len(removed_roles) > 0:
         for role in removed_roles:
@@ -217,6 +220,7 @@ async def on_member_update(old, new):
             print(
                 'Removing %s (%s) from Keycloak group %s' % (
                     keycloak_user[0]["username"], new.global_name, keycloak_group[0]["name"]))
+            KeycloakClient.group_user_remove(user_id=keycloak_user[0]["id"],group_id=keycloak_group[0]["id"])
 
 
 DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
