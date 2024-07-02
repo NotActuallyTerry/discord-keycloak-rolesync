@@ -1,10 +1,7 @@
 import os
-
-from dotenv import load_dotenv
 import discord
 from keycloak import KeycloakAdmin
 
-load_dotenv()
 
 KeycloakClient = KeycloakAdmin(
             server_url=os.environ["KEYCLOAK_URL"],
