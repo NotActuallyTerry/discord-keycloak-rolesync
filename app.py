@@ -19,7 +19,6 @@ KeycloakClient = KeycloakAdmin(
 # We require the Members intent to receive updates to role membership
 intents = discord.Intents.default()
 intents.members = True
-intents.message_content = True
 
 DiscordClient = discord.Client(intents=intents)
 
@@ -194,15 +193,6 @@ async def on_ready():
                         keycloak_user["username"], discord_user.global_name, group["name"]))
 
                 KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
-
-
-@DiscordClient.event
-async def on_message(message):
-    if message.author == DiscordClient.user:
-        return
-
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
 
 
 @DiscordClient.event
