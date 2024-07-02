@@ -230,7 +230,7 @@ async def on_member_update(previous, current):
             print('Adding %s (%s) to Keycloak group %s' % (
                     keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
 
-            KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"],group_id=keycloak_group[0]["id"])
+            KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
 
     # Process all Discord roles the user was removed from
     if len(removed_roles) > 0:
@@ -241,7 +241,7 @@ async def on_member_update(previous, current):
             print('Removing %s (%s) from Keycloak group %s' % (
                     keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
 
-            KeycloakClient.group_user_remove(user_id=keycloak_user[0]["id"],group_id=keycloak_group[0]["id"])
+            KeycloakClient.group_user_remove(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
 
 
 DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
