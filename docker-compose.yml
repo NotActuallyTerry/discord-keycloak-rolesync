@@ -3,7 +3,6 @@ services:
     image: NotActuallyTerry/discord-keycloak-rolesync
     build:
       context: .
-      target: production
     environment:
       DISCORD_BOT_TOKEN:
       KEYCLOAK_URL:

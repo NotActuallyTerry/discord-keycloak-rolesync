@@ -22,14 +22,14 @@ RUN pipenv install --skip-lock
 # Stage 3: Run in a distroless image
 # Reduces final image size & removes anything not required for running the app itself
 # Less size, less points of traversal, less problems
-FROM gcr.io/distroless/python3-debian12 AS production
+FROM gcr.io/distroless/python3-debian12
 
 LABEL org.opencontainers.image.title="Discord to Keycloak Role Sync"
 LABEL org.opencontainers.image.description="Synchronises membership of Discord roles to Keycloak groups"
 LABEL org.opencontainers.image.authors="Ike Johnson-Woods <contact@ike.au>"
 
-LABEL org.opencontainers.image.documentation="https://github.com/NotActuallyTerry/discord-keycloak-rolesync/"
-LABEL org.opencontainers.image.source="git@github.com:NotActuallyTerry/discord-keycloak-rolesync.git"
+LABEL org.opencontainers.image.source=https://github.com/NotActuallyTerry/discord-keycloak-rolesync
+LABEL org.opencontainers.image.license=MPL-2.0
 
 COPY --from=builder-pipenv /app/.venv/ /venv/
 COPY app.py /app/app.py
