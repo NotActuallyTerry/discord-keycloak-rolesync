@@ -1,7 +1,5 @@
 import os
 
-# TODO: idiot proof everything
-
 from dotenv import load_dotenv
 import discord
 from keycloak import KeycloakAdmin
