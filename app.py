@@ -194,10 +194,9 @@ async def on_ready():
         # Remove users from the Keycloak group if they're not a part of the Discord role
         for keycloak_user in group_members:
             discord_id = get_discord_id(client=KeycloakClient, user_id=keycloak_user["id"])
-            discord_user = DiscordClient.get_guild(role.guild.id).get_member(discord_id)
 
-            if discord_user.id not in [user.id for user in role.members]:
-                print("Removing %s (%s) from Keycloak group %s" % (
+            if discord_id not in [user.id for user in role.members]:
+                discord_user = DiscordClient.get_guild(role.guild.id).get_member(discord_id)
                 logger.info("Removing %s (%s) from Keycloak group %s" % (
                         keycloak_user["username"], discord_user.global_name, group["name"]))
 
