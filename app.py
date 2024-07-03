@@ -1,6 +1,19 @@
+import logging
 import os
+
 import discord
 from keycloak import KeycloakAdmin
+
+
+dt_fmt = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 
 KeycloakClient = KeycloakAdmin(
@@ -150,7 +163,7 @@ def get_discord_id(client: KeycloakAdmin = None, user_id: str = None) -> int:
 
 @DiscordClient.event
 async def on_ready():
-    print(f'We have logged in as {DiscordClient.user}')
+    logger.info(f'We have logged in as {DiscordClient.user}')
 
     groups = get_linked_groups(client=KeycloakClient)
 
@@ -159,7 +172,7 @@ async def on_ready():
         if not role:
             continue
 
-        print(f'Syncing Keycloak group {group["name"]} with Discord role {role.name}')
+        logger.info(f'Syncing Keycloak group {group["name"]} with Discord role {role.name}')
         group_members = get_group_members(client=KeycloakClient, group_id=group["id"])
 
         # Add users to the Keycloak group if they're a part of the Discord role
@@ -173,7 +186,7 @@ async def on_ready():
             if keycloak_user[0]["id"] in [user["id"] for user in group_members]:
                 continue
 
-            print("Adding %s (%s) to Keycloak group %s" % (
+            logger.info("Adding %s (%s) to Keycloak group %s" % (
                     keycloak_user[0]["username"], discord_user.global_name, group["name"]))
 
             KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=group["id"])
@@ -185,6 +198,7 @@ async def on_ready():
 
             if discord_user.id not in [user.id for user in role.members]:
                 print("Removing %s (%s) from Keycloak group %s" % (
+                logger.info("Removing %s (%s) from Keycloak group %s" % (
                         keycloak_user["username"], discord_user.global_name, group["name"]))
 
                 KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
@@ -224,7 +238,7 @@ async def on_member_update(previous, current):
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
 
-            print('Adding %s (%s) to Keycloak group %s' % (
+            logger.info('Adding %s (%s) to Keycloak group %s' % (
                     keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
 
             KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
@@ -235,10 +249,10 @@ async def on_member_update(previous, current):
             keycloak_group = KeycloakClient.get_groups(
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
 
-            print('Removing %s (%s) from Keycloak group %s' % (
+            logger.info('Removing %s (%s) from Keycloak group %s' % (
                     keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
 
             KeycloakClient.group_user_remove(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
 
 
-DiscordClient.run(os.environ["DISCORD_BOT_TOKEN"])
+DiscordClient.run(token=os.environ["DISCORD_BOT_TOKEN"], log_handler=handler, log_formatter=formatter)
