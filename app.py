@@ -187,7 +187,7 @@ async def on_ready():
                 continue
 
             logger.info("Adding %s (%s) to Keycloak group %s" % (
-                    keycloak_user[0]["username"], discord_user.global_name, group["name"]))
+                    keycloak_user[0]["username"], discord_user.name, group["name"]))
 
             KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=group["id"])
 
@@ -198,7 +198,7 @@ async def on_ready():
             if discord_id not in [user.id for user in role.members]:
                 discord_user = DiscordClient.get_guild(role.guild.id).get_member(discord_id)
                 logger.info("Removing %s (%s) from Keycloak group %s" % (
-                        keycloak_user["username"], discord_user.global_name, group["name"]))
+                        keycloak_user["username"], discord_user.name, group["name"]))
 
                 KeycloakClient.group_user_remove(user_id=keycloak_user["id"], group_id=group["id"])
 
@@ -238,7 +238,7 @@ async def on_member_update(previous, current):
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
 
             logger.info('Adding %s (%s) to Keycloak group %s' % (
-                    keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
+                    keycloak_user[0]["username"], current.name, keycloak_group[0]["name"]))
 
             KeycloakClient.group_user_add(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
 
@@ -249,7 +249,7 @@ async def on_member_update(previous, current):
                 query={"q": "discord-role:%s" % role.id, "exact": "true"})
 
             logger.info('Removing %s (%s) from Keycloak group %s' % (
-                    keycloak_user[0]["username"], current.global_name, keycloak_group[0]["name"]))
+                    keycloak_user[0]["username"], current.name, keycloak_group[0]["name"]))
 
             KeycloakClient.group_user_remove(user_id=keycloak_user[0]["id"], group_id=keycloak_group[0]["id"])
 
